@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>上架餐點</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f5f5f5;
+      color: #333;
+      text-align: center;
+    }
+
+    .msg {
+      font-size: 16px;
+    }
+
+    .error {
+      color: #d32f2f;
+    }
+  </style>
+</head>
+
+<body>
+  <p class="msg" id="status">載入中，請稍候...</p>
+
+  <script>
+    // ============================================================
+    // TODO: 將下方 YOUR_LIFF_ID_HERE 換成你在 LINE Developers
+    //       Console 建立的 LIFF ID（格式：1234567890-xxxxxxxx）
+    // ============================================================
+    const LIFF_ID = '2009598565-Vu3WMRBl';
+
+    // Tally 表單 URL（已固定，不需修改）
+    const TALLY_FORM_URL = 'https://tally.so/r/b5OP81';
+
+    const statusEl = document.getElementById('status');
+
+    liff.init({ liffId: LIFF_ID })
+      .then(() => {
+        if (!liff.isLoggedIn()) {
+          // 未登入時導向 LINE 登入，登入後會回到此頁
+          liff.login({ redirectUri: location.href });
+          return;
+        }
+        return liff.getProfile();
+      })
+      .then((profile) => {
+        if (!profile) return; // 剛剛觸發了 liff.login()，頁面即將跳轉
+
+        const userId = profile.userId;
+
+        // 將 userId 作為 hidden field 帶入 Tally 表單 URL
+        // Tally 表單需要有一個 Hidden Field，URL 參數名稱設為 "userId"
+        const redirectUrl = `${TALLY_FORM_URL}?userId=${encodeURIComponent(userId)}`;
+
+        statusEl.textContent = '跳轉中...';
+        window.location.href = redirectUrl;
+      })
+      .catch((err) => {
+        console.error('LIFF init error:', err);
+        statusEl.className = 'msg error';
+        statusEl.textContent = '發生錯誤，請關閉後重試。';
+      });
+  </script>
+</body>
+
+</html>
